@@ -1,4 +1,4 @@
-describe('typeahead tests', function () {
+ddescribe('typeahead tests', function () { //Only run this suite for now
 
   var $scope, $compile, $document, $timeout;
   var changeInputValueTo;
@@ -31,7 +31,7 @@ describe('typeahead tests', function () {
     changeInputValueTo = function (element, value) {
       var inputEl = findInput(element);
       inputEl.val(value);
-      inputEl.trigger($sniffer.hasEvent('input') ? 'input' : 'change');
+      inputEl.triggerHandler($sniffer.hasEvent('input') ? 'input' : 'change');
       $scope.$digest();
     };
   }));
@@ -48,7 +48,7 @@ describe('typeahead tests', function () {
   };
 
   var findDropDown = function (element) {
-    return element.find('ul.typeahead');
+    return _jQuery(element).find('ul.typeahead');
   };
 
   var findMatches = function (element) {
@@ -57,9 +57,10 @@ describe('typeahead tests', function () {
 
   var triggerKeyDown = function (element, keyCode) {
     var inputEl = findInput(element);
-    var e = $.Event("keydown");
+    var e = document.createEvent("Events");
+    e.initEvent("keydown", true, true);
     e.which = keyCode;
-    inputEl.trigger(e);
+    inputEl[0].dispatchEvent(e);      
     return e;
   };
 
@@ -81,7 +82,7 @@ describe('typeahead tests', function () {
         this.message = function () {
           return "Expected '" + angular.mock.dump(this.actual) + "' to be opened.";
         };
-        return typeaheadEl.css('display') === 'block' && liEls.length === noOfMatches && $(liEls[activeIdx]).hasClass('active');
+        return typeaheadEl.css('display') === 'block' && liEls.length === noOfMatches && _jQuery(liEls[activeIdx]).hasClass('active');
       }
     });
   });
@@ -313,9 +314,9 @@ describe('typeahead tests', function () {
       var inputEl = findInput(element);
 
       changeInputValueTo(element, 'b');
-      var match = $(findMatches(element)[1]).find('a')[0];
+      var match = findMatches(element)[1];
 
-      $(match).click();
+      browserTrigger(match,'click');
       $scope.$digest();
 
       expect($scope.result).toEqual('baz');
@@ -362,8 +363,8 @@ describe('typeahead tests', function () {
       var inputEl = findInput(element);
 
       changeInputValueTo(element, 'b');
-
-      $document.find('body').click();
+      
+      browserTrigger($document.find('body'), 'click');
       $scope.$digest();
 
       expect(element).toBeClosed();
@@ -411,7 +412,7 @@ describe('typeahead tests', function () {
       changeInputValueTo(element, 'match');
       $scope.$digest();
 
-      inputEl.blur();
+      inputEl.triggerHandler('blur');
       $timeout.flush();
 
       expect(element).toBeClosed();
@@ -443,7 +444,7 @@ describe('typeahead tests', function () {
       var element = prepareInputEl("<div><input ng-model='result' typeahead='item for item in source | filter:$viewValue'></div>");
       var e = triggerKeyDown(element, 13);
 
-      expect(e.isDefaultPrevented()).toBeTruthy();
+      expect(e.returnValue).toBeFalsy();
     });
 
     it('does not close matches popup on click in input', function () {
@@ -457,7 +458,7 @@ describe('typeahead tests', function () {
 
       changeInputValueTo(element, 'b');
 
-      inputEl.click();
+      browserTrigger(inputEl,'click');
       $scope.$digest();
 
       expect(element).toBeOpenWithActive(2, 0);
